@@ -8,7 +8,7 @@ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce
 yum install -y docker-ce
 systemctl start docker
 systemctl enable docker
-docker run -d -p 80:8080 --name=keycloak -e KEYCLOACK_USER=admin -e KEYCLOACK_PASSWORD=admin jboss/keycloak
+docker run -d -p 80:8080 --name=keycloak -e KEYCLOACK_USER=admin -e KEYCLOACK_PASSWORD=admin quay.io/keycloak/keycloak  
 docker exec keycloak /opt/jboss/keycloak/bin/add-user-keycloak.sh -u admin -p Cloudera123
 docker restart keycloak
 sleep 10

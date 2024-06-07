@@ -4,7 +4,7 @@
 USER_CONFIG_FILE="/userconfig/configfile"
 KC_TF_CONFIG_DIR=$HOME_DIR/cdp-wrkshps-quickstarts/cdp-kc-config/keycloak_terraform_config
 KC_ANS_CONFIG_DIR=$HOME_DIR/cdp-wrkshps-quickstarts/cdp-kc-config/keycloak_ansible_config
-CDP_TF_CONFIG_DIR=$HOME_DIR/cdp-wrkshps-quickstarts/cdp-env-tf
+CDP_TF_CONFIG_DIR=$HOME_DIR/cdp-tf-quickstarts/
 DS_CONFIG_DIR=$HOME_DIR/cdp-wrkshps-quickstarts/cdp-data-services
 USER_ACTION=$1
 validating_variables () {
@@ -274,7 +274,7 @@ echo "==============================Provisioning CDP Environment================
 sleep 10
 USER_NAMESPACE=$workshop_name
 cp -R $CDP_TF_CONFIG_DIR /userconfig/.$USER_NAMESPACE/
-cd /userconfig/.$USER_NAMESPACE/cdp-env-tf/aws
+cd /userconfig/.$USER_NAMESPACE/cdp-tf-quickstarts/aws
 cdp_cidr="\"$local_ip\""
 terraform init
 terraform apply --auto-approve \
@@ -303,7 +303,7 @@ update_cdp_user_group() {
 destroy_cdp () {
 USER_NAMESPACE=$workshop_name
 echo "==============================Destroying CDP Environment Infrastructure========================================"
-cd /userconfig/.$USER_NAMESPACE/cdp-env-tf/aws
+cd /userconfig/.$USER_NAMESPACE/cdp-tf-quickstarts/aws
 cdp_cidr="\"$local_ip\""
 terraform init
 terraform destroy --auto-approve \
@@ -312,7 +312,7 @@ terraform destroy --auto-approve \
          -var "aws_key_pair=${aws_key_pair}" \
          -var "deployment_template=${deployment_template}" \
          -var "ingress_extra_cidrs_and_ports={cidrs = ["${cdp_cidr}"],ports = [443, 22]}"
-rm -rf /userconfig/.$USER_NAMESPACE/cdp-env-tf       
+rm -rf /userconfig/.$USER_NAMESPACE/cdp-tf-quickstarts/       
 }
 #--------------------------------------------------------------------------------------------------#
 # Function to destroy Complete HOL Infrastructure.

@@ -1,34 +1,48 @@
 # MAINTAINER Avanish Tiwari <aktiwari@cloudera.com>
 # Base Image 
-FROM ubuntu:22.04
+FROM alpine:latest
 
 # Directory for storing scripts.
 RUN mkdir -p /opt/cdp-public-cloud-automation
-
 # Setting Up Environment Variable.
 ENV LANG en_US.UTF-8
 ENV LC_ALL en_US.UTF-8
 ENV HOME_DIR="/opt/cdp-public-cloud-automation"
 
 # Installing Required Packages.
-RUN apt-get update && \
-    apt-get install -y jq wget git make unzip gcc build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev openssl libssl-dev libreadline-dev bzip2 libffi-dev curl libbz2-dev libdb-dev liblzma-dev libsqlite3-dev uuid-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-RUN wget https://www.python.org/ftp/python/3.10.9/Python-3.10.9.tgz && \
+RUN apk update && \
+    apk add --no-cache \
+        bash \
+        jq \
+        wget \
+        git \
+        make \
+        which \
+        unzip \
+        rust \
+        openssl \
+        openssl-dev \
+        gcc \
+        g++ \
+        libffi-dev \
+        bzip2-dev \
+        zlib-dev \
+        linux-headers \
+        musl-dev \
+        ncurses-dev \
+        curl && \
+    wget https://www.python.org/ftp/python/3.10.9/Python-3.10.9.tgz && \    
     tar -xvf Python-3.10.9.tgz && \
     cd Python-3.10.9 && \
     ./configure --enable-optimizations && \
     make altinstall && \
-    cp /usr/local/bin/python3.10 /usr/bin/ && \
-    rm -f /usr/bin/python && \
-    ln -s /usr/bin/python3.10 /usr/bin/python && \
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
+    ln -s /usr/local/bin/python3.10 /usr/bin/python3 && \
+    ln -s /usr/local/bin/python3.10 /usr/bin/python && \
+    cd .. && \
+    rm -rf Python-3.10.9 Python-3.10.9.tgz && \
+    wget https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py && \
-    rm /Python-3.10.9.tgz && \
-    rm get-pip.py && \
-    rm -rf Python-3.10.9
+    rm get-pip.py
 
 RUN pip install --upgrade pip && \
     pip install setuptools_rust && \
@@ -39,11 +53,13 @@ RUN pip install --upgrade pip && \
     ansible-galaxy collection install community.general && \
     ansible-galaxy collection install git+https://github.com/cloudera-labs/cloudera.cloud.git,main
 
-# Install Terraform
-RUN curl "https://releases.hashicorp.com/terraform/1.4.6/terraform_1.4.6_linux_amd64.zip" -o "/tmp/terraform_1.4.6_linux_amd64.zip" && \
-    unzip /tmp/terraform_1.4.6_linux_amd64.zip -d /usr/local/bin/ && \
-    rm -rf /tmp/terraform_1.4.6_linux_amd64.zip
-
+#cloning cdp quickstart for aws only
+RUN git clone https://github.com/cloudera-labs/cdp-tf-quickstarts.git -b main --single-branch --depth 1 $HOME_DIR/cdp-tf-quickstarts && \
+    cd $HOME_DIR/cdp-tf-quickstarts && \
+    git sparse-checkout init --cone && \
+    git sparse-checkout set aws && \
+    git checkout @ && \
+    ls -ltrh
 # Detect the architecture and install the correct AWS CLI
 RUN ARCH=$(uname -m) && \
     if [ "$ARCH" = "x86_64" ]; then \
@@ -57,13 +73,10 @@ RUN ARCH=$(uname -m) && \
     ./aws/install && \
     rm -rf awscliv2.zip aws
 
-# Cloning cdp quickstart for AWS only
-RUN git clone https://github.com/cloudera-labs/cdp-tf-quickstarts.git -b main --single-branch --depth 1 $HOME_DIR/cdp-tf-quickstarts && \
-    cd $HOME_DIR/cdp-tf-quickstarts && \
-    git sparse-checkout init --cone && \
-    git sparse-checkout set aws && \
-    git checkout @ && \
-    ls -ltrh
+# Install Terraform
+RUN wget "https://releases.hashicorp.com/terraform/1.4.6/terraform_1.4.6_linux_amd64.zip" -O "terraform_1.4.6_linux_amd64.zip" && \
+    unzip terraform_1.4.6_linux_amd64.zip -d /usr/local/bin/ && \
+    rm -rf terraform_1.4.6_linux_amd64.zip
 
 COPY cdp-wrkshps-quickstarts /opt/cdp-public-cloud-automation/cdp-wrkshps-quickstarts
 COPY entrypoint/docker-entrypoint.sh /usr/local/bin/
@@ -72,6 +85,5 @@ COPY entrypoint/default.py /usr/local/lib/python3.10/site-packages/ansible/plugi
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR "$HOME_DIR"
-#CMD ["/bin/bash"]
-ENTRYPOINT ["docker-entrypoint.sh"]
-
+CMD ["/bin/bash"]
+#ENTRYPOINT ["docker-entrypoint.sh"]
