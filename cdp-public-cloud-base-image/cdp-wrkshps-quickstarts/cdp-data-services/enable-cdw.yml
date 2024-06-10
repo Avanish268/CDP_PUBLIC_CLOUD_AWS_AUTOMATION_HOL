@@ -9,12 +9,12 @@
         env: "{{ cdp_env_name }}"
         state: present
         aws_public_subnets: "{{ env_public_subnet }}"
-        aws_private_subnets: "{{ env_private_subnet }}"
+        aws_worker_subnets: "{{ env_private_subnet if env_private_subnet is defined and env_private_subnet != '' else env_public_subnet }}"
         wait: False
       register: dwcluster
       until: dwcluster['cluster']['status'] == "Running"
       retries: 50
-      delay: 30
+      delay: 60
 
     - name: waiting for  default database catalog to be running
       cloudera.cloud.dw_database_catalog_info:

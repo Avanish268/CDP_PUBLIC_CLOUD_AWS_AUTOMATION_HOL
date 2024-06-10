@@ -8,34 +8,28 @@
       cloudera.cloud.dw_cluster_info:
         env: "{{ cdp_env_name }}"
       register: dwcluster
-
     - name: fetching details of database catalog
       cloudera.cloud.dw_database_catalog_info:
-        cluster_id: "{{ dwcluster['clusters'][0]['id'] }}"
+        cluster_id: "{{ dwcluster | default({'clusters': [{'id': 'N/A'}]}) | selectattr('clusters', 'defined') | map(attribute='id') | first | default('N/A') }}"
       register: dbcatalogstatus
-
     - name: fetching data visualization clusters
       ansible.builtin.command: >
         cdp dw list-data-visualizations --cluster-id "{{ dwcluster['clusters'][0]['id'] }}"
       register: datavizs
-
     - name: removing data visualization cluster
       ansible.builtin.command: >
         cdp dw delete-data-visualization --cluster-id "{{ dwcluster['clusters'][0]['id'] }}" --data-visualization-id "{{ item }}"
       loop: "{{ datavizs.stdout | from_json | json_query('dataVisualizations[].id') }}"
-
     - name: fetching all virtual warehouses
       cloudera.cloud.dw_virtual_warehouse_info:
-        cluster_id: "{{ dwcluster['clusters'][0]['id'] }}"
-        catalog_id: "{{ dbcatalogstatus['database_catalogs'][0]['id'] }}"
+        cluster_id: "{{ dwcluster | default({'clusters': [{'id': 'N/A'}]}) | selectattr('clusters', 'defined') | map(attribute='id') | first | default('N/A') }}"
+        catalog_id: "{{ dbcatalogstatus | default({'database_catalogs': [{'id': 'N/A'}]}) | selectattr('database_catalogs', 'defined') | map(attribute='id') | first | default('N/A') }}"
       register: vwarehouses
-
     - name: extract the virtual warehouse id
       ansible.builtin.set_fact:
         vw_ids: "{{ vwarehouses['virtual_warehouses'] | community.general.json_query(query_string) | default([]) }}"
       vars:
         query_string: "[].{id:id}"
-
     - name: removing virtual warehouses
       cloudera.cloud.dw_virtual_warehouse:
         cluster_id: "{{ dwcluster['clusters'][0]['id'] }}"
@@ -45,7 +39,6 @@
         state: absent
       loop: "{{ vw_ids | reverse | list }}"
       ignore_errors: true
-
     - name: removing cdw cluster
       cloudera.cloud.dw_cluster:
         cluster_id: "{{ dwcluster['clusters'][0]['id'] }}"
