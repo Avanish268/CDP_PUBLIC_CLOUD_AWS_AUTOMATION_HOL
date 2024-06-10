@@ -35,15 +35,15 @@ variable "local_ip" {
 variable "amis" {
   type = map(string)
   default = {
-    "us-east-2" = "ami-033adaf0b583374d4"
-    "us-east-1" = "ami-0aedf6b1cb669b4c7"
-    "us-west-1" = "ami-0bcd12d19d926f8e9"
-    "us-west-2" = "ami-04f798ca92cc13f74"
-    "ap-south-1" = "ami-09f129ee53d3523c0"
-    "ap-southeast-1" = "ami-03bfba2e75432064e"
-    "ap-southeast-2" = "ami-0264ead5294ad1773"
-    "eu-central-1" = "ami-0afcbcee3dfbce929"
-    "eu-west-1" = "ami-00d464afa64e1fc69"
-    "eu-west-2" = "ami-0de2f45684e59282c"
+    "us-east-2" = "ami-0f30a9c3a48f3fa79"
+    "us-east-1" = "ami-0e001c9271cf7f3b9"
+    "us-west-1" = "ami-036cafe742923b3d9"
+    "us-west-2" = "ami-03c983f9003cb9cd1"
+    "ap-south-1" = "ami-05e00961530ae1b55"
+    "ap-southeast-1" = "ami-0be48b687295f8bd6"
+    "ap-southeast-2" = "ami-01ed8ade75d4eee2f"
+    "eu-central-1" = "ami-026c3177c9bd54288"
+    "eu-west-1" = "ami-0607a9783dd204cae"
+    "eu-west-2" = "ami-09627c82937ccdd6d"
   }
 }
