@@ -12,7 +12,7 @@ case $USER_ACTION in
           validating_variables
           key_pair_file
           setup_aws_and_cdp_profile
-          aws_prereq
+          #aws_prereq
           setup_keycloak_ec2 $keycloak_sg_name
           if [ $? -ne 0 ]; then
              echo "Keycloak Server Provisioning Failed. Rolling Back The Changes."
@@ -25,22 +25,22 @@ Please Try Again. Exiting....."
              echo
           fi
           sleep 10
-          provision_cdp
-          if [ $? -ne 0 ]; then
-             echo "CDP Environment Provisioning Failed. Rolling Back The Changes."
-             destroy_cdp
-             destroy_keycloak
-             echo "Infrastructure Provisioning For $workshop_name Is Not Succesful.
-Please Try Again. Exiting....."
-             exit 1
-          else
-             echo "================CDP Environment Provisioned=============================="
-             echo
-           fi
+#          provision_cdp
+#          if [ $? -ne 0 ]; then
+#             echo "CDP Environment Provisioning Failed. Rolling Back The Changes."
+#             destroy_cdp
+#             destroy_keycloak
+#             echo "Infrastructure Provisioning For $workshop_name Is Not Succesful.
+#Please Try Again. Exiting....."
+#             exit 1
+#          else
+#             echo "================CDP Environment Provisioned=============================="
+#             echo
+#           fi
            update_cdp_user_group
            cdp_idp_setup_user
            enable_data_services
-           echo "===================Infrastructure Provisioned==============================" 
+#           echo "===================Infrastructure Provisioned==============================" 
            
          ;;
    destroy)

@@ -6,8 +6,7 @@ FROM ubuntu:22.04
 RUN mkdir -p /opt/cdp-public-cloud-automation
 
 # Setting Up Environment Variable.
-ENV LANG en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV HOME_DIR="/opt/cdp-public-cloud-automation"
 
 # Installing Required Packages.
@@ -33,6 +32,7 @@ RUN wget https://www.python.org/ftp/python/3.10.9/Python-3.10.9.tgz && \
 RUN pip install --upgrade pip && \
     pip install setuptools_rust && \
     pip install ansible-core==2.12.10 && \
+    pip install awscli && \
     pip install cdpcli && \
     pip install jmespath==1.0.1 && \
     pip install git+https://github.com/cloudera-labs/cdpy@main#egg=cdpy && \
@@ -44,20 +44,7 @@ RUN curl "https://releases.hashicorp.com/terraform/1.4.6/terraform_1.4.6_linux_a
     unzip /tmp/terraform_1.4.6_linux_amd64.zip -d /usr/local/bin/ && \
     rm -rf /tmp/terraform_1.4.6_linux_amd64.zip
 
-# Detect the architecture and install the correct AWS CLI
-RUN ARCH=$(uname -m) && \
-    if [ "$ARCH" = "x86_64" ]; then \
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"; \
-    elif [ "$ARCH" = "aarch64" ]; then \
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"; \
-    else \
-        echo "Unsupported architecture: $ARCH" && exit 1; \
-    fi && \
-    unzip awscliv2.zip && \
-    ./aws/install && \
-    rm -rf awscliv2.zip aws
-
-# Cloning cdp quickstart for AWS only
+## Cloning cdp quickstart for AWS only
 RUN git clone https://github.com/cloudera-labs/cdp-tf-quickstarts.git -b main --single-branch --depth 1 $HOME_DIR/cdp-tf-quickstarts && \
     cd $HOME_DIR/cdp-tf-quickstarts && \
     git sparse-checkout init --cone && \

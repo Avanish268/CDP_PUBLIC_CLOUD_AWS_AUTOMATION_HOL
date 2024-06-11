@@ -28,7 +28,7 @@ resource "aws_instance" "keycloak-server" {
 
     connection {
       type        = "ssh"
-      user        = "centos"
+      user        = "ubuntu"
       private_key = "${file("/userconfig/${var.instance_keypair}.pem")}"
       host        = "${self.public_dns}"
     }
@@ -39,7 +39,7 @@ resource "aws_instance" "keycloak-server" {
 
     connection {
       type        = "ssh"
-      user        = "centos"
+      user        = "ubuntu"
       private_key = "${file("/userconfig/${var.instance_keypair}.pem")}"
       host        = "${self.public_dns}"
     }
