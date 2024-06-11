@@ -59,6 +59,6 @@ COPY entrypoint/default.py /usr/local/lib/python3.10/site-packages/ansible/plugi
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR "$HOME_DIR"
-CMD ["/bin/bash"]
-#ENTRYPOINT ["docker-entrypoint.sh"]
+#CMD ["/bin/bash"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 
