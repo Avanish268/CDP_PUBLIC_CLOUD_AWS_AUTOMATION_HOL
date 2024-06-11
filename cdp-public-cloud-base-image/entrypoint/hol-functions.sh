@@ -241,7 +241,7 @@ terraform apply -auto-approve \
           -var "local_ip=$local_ip" \
           -var "instance_keypair=$aws_key_pair" \
           -var "aws_region=$aws_region" \
-          -var "kc_security_group=$sg_name"
+          -var "kc_security_group=$sg_name"     
 RETURN=$?
            if [ $RETURN -eq 0 ]; then        
                 KEYCLOAK_SERVER_IP=$(terraform output -raw elastic_ip)
@@ -250,7 +250,7 @@ RETURN=$?
             else
                return 1
             fi         
-fi          
+fi  
  }
 #--------------------------------------------------------------------------------------------------#
 # Function to rollback keycloack EC2 Instance in case of failure during provision.
@@ -265,6 +265,7 @@ terraform destroy -auto-approve \
           -var "instance_keypair=$aws_key_pair" \
           -var "aws_region=$aws_region" \
           -var "kc_security_group=$sg_name"
+          
 
 rm -rf /userconfig/.$USER_NAMESPACE/keycloak_terraform_config
 rm -rf /userconfig/.$USER_NAMESPACE/keycloak_ansible_config
@@ -279,6 +280,17 @@ USER_NAMESPACE=$workshop_name
 cp -R $CDP_TF_CONFIG_DIR /userconfig/.$USER_NAMESPACE/
 cd /userconfig/.$USER_NAMESPACE/cdp-tf-quickstarts/aws
 cdp_cidr="\"$local_ip\""
+
+#Adding outputs in quickstart outputs.tf
+cat <<EOF >> ./outputs.tf
+   
+output "aws_public_subnet_ids" {
+  value = module.cdp_aws_prereqs.aws_public_subnet_ids
+}  
+output "aws_private_subnet_ids" {
+  value = module.cdp_aws_prereqs.aws_private_subnet_ids
+}  
+EOF
 terraform init
 terraform apply --auto-approve \
         -var "env_prefix=${workshop_name}" \
@@ -299,7 +311,7 @@ if [ $cdp_provision_status -eq 0 ]; then
 #--------------------------------------------------------------------------------------------------#
 # Update the User Group.
 update_cdp_user_group() {
-   cdp iam update-group --group-name $workshop_name-cdp-user-group --sync-membership-on-user-login
+   cdp iam update-group --group-name $workshop_name-aw-cdp-user-group --sync-membership-on-user-login
 }
 #--------------------------------------------------------------------------------------------------#
 # Function to destroy CDP Environment.
@@ -328,6 +340,7 @@ destroy_hol_infra () {
 #--------------------------------------------------------------------------------------------------#
 # Function to configure IDP Client
 cdp_idp_setup_user () {
+echo "keycloak__admin_password:$keycloak__admin_password"
 KEYCLOAK_SERVER_IP=$(cat /userconfig/keycloak_ip)
 USER_NAMESPACE=$workshop_name
 cd /userconfig/.$USER_NAMESPACE/keycloak_ansible_config
