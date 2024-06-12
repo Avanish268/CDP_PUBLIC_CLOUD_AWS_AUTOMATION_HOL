@@ -157,62 +157,65 @@ cdp configure set cdp_private_key $cdp_private_key;
 #---------------------------------------------------------------------------------------------------------------------#
 # Function to verify AWS pre-requisites
 aws_prereq () {
+          vpc_limit=$(aws service-quotas get-service-quota \
+          --service-code vpc \
+          --output json \
+          --region $aws_region \
+          --quota-code L-F678F1CE | jq -r '.[]["Value"]')
+
+          vpc_used=$(aws ec2 describe-vpcs --output json --region $aws_region | jq -r '.[] | length')
+
+               if [ $vpc_limit -gt $vpc_used ]; then
+                    echo "Check Available VPC .....Passed"
+               else
+                    echo
+                    echo "************************************************************************************************************************************************************"
+                    echo "* Fatal !! Can't Continue: The VPC limit has been reached in the $aws_region region. Either select any other region in 'configfile' or remove unused VPC's *"
+                    echo "************************************************************************************************************************************************************"
+                    exit
+               fi
+         eip_limit=$(aws service-quotas get-service-quota \
+          --service-code ec2 \
+          --output json \
+          --region $aws_region \
+          --quota-code L-0263D0A3 | jq -r '.[]["Value"]')
+         eip_used=$(aws ec2 describe-addresses --output json --region $aws_region | jq -r '.[] | length')
+              
+              if [[ $(( $eip_limit - $eip_used )) -ge 5 ]]; then
+                    echo "Check Available EIP ....Passed"
+              else
+                    echo
+                    echo "*************************************************************************************************************************************************************************************************"
+                    echo "* Fatal !! Can't Continue: There are not enough free Elastic IP's available in the $aws_region region. Either select any other region in 'configfile' or release unused EIPs in $aws_region     *"
+                    echo "*************************************************************************************************************************************************************************************************"
+                    exit
+               fi      
+               # Check current bucket count
+               bucket_count=$(aws s3api list-buckets --query "Buckets | length(@)" --output text)
+               echo "Current bucket count: $bucket_count"
+
+               remaining_buckets=$((100 - bucket_count))
+
+               if [ $remaining_buckets -le 0 ]; then
+                  bucket_name="test-bucket-$(date +%s)"
+                  aws s3api create-bucket --bucket $bucket_name --region us-east-1 2>/dev/null
+
+                  if [ $? -eq 0 ]; then
+                     aws s3api delete-bucket --bucket $bucket_name --region us-east-1
+                     if [ $? -eq 0 ]; then
+                        echo "Check Available S3 Bucket .....Passed"
+                     fi
+                  else
+                      echo
+                      echo "************************************************************************************************************************************************************"
+                      echo "* Fatal !! Can't Continue: The S3 bucket limit has been reached on your AWS account. Either increase quota or remove unused S3 Buckets *"
+                      echo "************************************************************************************************************************************************************"
+                      exit 1
+                  fi
+               else
+                   echo "Check Available S3 Bucket .....Passed"
+               fi
    
- vpc_limit=$(aws service-quotas get-service-quota \
- --service-code vpc \
- --output json \
- --region $aws_region \
- --quota-code L-F678F1CE | jq -r '.[]["Value"]')
- vpc_used=$(aws ec2 describe-vpcs --output json --region $aws_region | jq -r '.[] | length')
-      if [ $vpc_limit -gt $vpc_used ]; then
-           echo "Check Available VPC .....Passed"
-      else
-           echo
-           echo "************************************************************************************************************************************************************"
-           echo "* Fatal !! Can't Continue: The VPC limit has been reached in the $aws_region region. Either select any other region in 'configfile' or remove unused VPC's *"
-           echo "************************************************************************************************************************************************************"
-           exit
-      fi
-eip_limit=$(aws service-quotas get-service-quota \
- --service-code ec2 \
- --output json \
- --region $aws_region \
- --quota-code L-0263D0A3 | jq -r '.[]["Value"]')
-eip_used=$(aws ec2 describe-addresses --output json --region $aws_region | jq -r '.[] | length')
-     
-     if [[ $(( $eip_limit - $eip_used )) -ge 5 ]]; then
-           echo "Check Available EIP ....Passed"
-     else
-           echo
-           echo "*************************************************************************************************************************************************************************************************"
-           echo "* Fatal !! Can't Continue: There are not enough free Elastic IP's available in the $aws_region region. Either select any other region in 'configfile' or release unused EIPs in $aws_region     *"
-           echo "*************************************************************************************************************************************************************************************************"
-           exit
-      fi      
-# Check current bucket count
-bucket_count=$(aws s3api list-buckets --query "Buckets | length(@)" --output text)
-echo "Current bucket count: $bucket_count"
-
-remaining_buckets=$((100 - bucket_count))
-
-if [ $remaining_buckets -le 0 ]; then
-  bucket_name="test-bucket-$(date +%s)"
-  aws s3api create-bucket --bucket $bucket_name --region us-east-1 2>/dev/null
-
-  if [ $? -eq 0 ]; then
-    aws s3api delete-bucket --bucket $bucket_name --region us-east-1
-    if [ $? -eq 0 ]; then
-      echo "Check Available S3 Bucket .....Passed"
-    fi
-  else
-    echo
-    echo "************************************************************************************************************************************************************"
-    echo "* Fatal !! Can't Continue: The S3 bucket limit has been reached on your AWS account. Either increase quota or remove unused S3 Buckets *"
-    echo "************************************************************************************************************************************************************"
-    exit 1
-  fi
-else
-  echo "Check Available S3 Bucket .....Passed"
 }
 #---------------------------------------------------------------------------------------------------------------------#
 # Function to validate if resources are already present on AWS.
