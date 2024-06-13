@@ -249,7 +249,8 @@ terraform apply -auto-approve \
           -var "local_ip=$local_ip" \
           -var "instance_keypair=$aws_key_pair" \
           -var "aws_region=$aws_region" \
-          -var "kc_security_group=$sg_name-$workshop_name-sg"
+          -var "kc_security_group=$sg_name-$workshop_name-sg" \
+          -var "keycloak_admin_password=$keycloak__admin_password" 
 RETURN=$?
            if [ $RETURN -eq 0 ]; then        
                 KEYCLOAK_SERVER_IP=$(terraform output -raw elastic_ip)
@@ -265,7 +266,9 @@ terraform apply -auto-approve \
           -var "local_ip=$local_ip" \
           -var "instance_keypair=$aws_key_pair" \
           -var "aws_region=$aws_region" \
-          -var "kc_security_group=$sg_name"     
+          -var "kc_security_group=$sg_name" \
+          -var "keycloak_admin_password=$keycloak__admin_password"
+ 
 RETURN=$?
            if [ $RETURN -eq 0 ]; then        
                 KEYCLOAK_SERVER_IP=$(terraform output -raw elastic_ip)
@@ -288,8 +291,8 @@ terraform destroy -auto-approve \
           -var "local_ip=$local_ip" \
           -var "instance_keypair=$aws_key_pair" \
           -var "aws_region=$aws_region" \
-          -var "kc_security_group=$sg_name"
-          
+          -var "kc_security_group=$sg_name" \
+          -var "keycloak_admin_password=$keycloak__admin_password"
 
 rm -rf /userconfig/.$USER_NAMESPACE/keycloak_terraform_config
 rm -rf /userconfig/.$USER_NAMESPACE/keycloak_ansible_config

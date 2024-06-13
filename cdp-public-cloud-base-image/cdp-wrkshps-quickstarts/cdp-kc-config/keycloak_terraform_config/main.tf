@@ -16,7 +16,8 @@ provider "aws" {
 resource "aws_instance" "keycloak-server" {
   ami = var.amis[var.aws_region]
   instance_type = "${var.instance_type}"
-  user_data = file("${path.module}/install-docker.sh")
+  user_data = templatefile("${path.module}/install-docker.sh", {
+    keycloak_admin_password = var.keycloak_admin_password})
   key_name = "${var.instance_keypair}"
   security_groups = [ aws_security_group.vpc-ssh-web.name ]
   tags = {
@@ -46,8 +47,6 @@ resource "aws_instance" "keycloak-server" {
   }
   
 }
-
-
 resource aws_eip "kc_elastic_ip" {
 instance = aws_instance.keycloak-server.id
 }
@@ -84,30 +83,3 @@ resource "aws_security_group" "vpc-ssh-web" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-# # Security Group For Web Traffic
-# resource "aws_security_group" "vpc-web" {
-#   name = "${var.kc_security_group}-web"
-#   description = "Allow Web Traffic"
-#   ingress {
-#     description = "Allow web Traffic"
-#     from_port = 80
-#     to_port = 80
-#     protocol = "tcp"
-#     cidr_blocks = [ "${var.local_ip}" ]
-#   }
-#   ingress {
-#     description = "Allow web Traffic"
-#     from_port = 443
-#     to_port = 443
-#     protocol = "tcp"
-#     cidr_blocks = [ "${var.local_ip}" ]
-#   }
-#   egress {
-#     description = "Allow All Outbound Connection"
-#     from_port = 0
-#     to_port = 0
-#     protocol = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-  
-# }

@@ -32,6 +32,10 @@ variable "local_ip" {
   type = string
   default = "0.0.0.0/0"
 }
+variable "keycloak_admin_password" {
+  description = "admin password for keycloak"
+  type = string
+}
 variable "amis" {
   type = map(string)
   default = {
