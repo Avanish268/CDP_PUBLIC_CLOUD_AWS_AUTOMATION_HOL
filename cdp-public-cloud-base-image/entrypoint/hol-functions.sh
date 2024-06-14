@@ -387,7 +387,7 @@ ansible-playbook keycloak_hol_user_setup.yml --extra-vars \
     keycloak__admin_password=$keycloak__admin_password \
     keycloak__domain=http://$KEYCLOAK_SERVER_IP \
     hol_keycloak_realm=master \
-    hol_session_name=$workshop_name-cdp-user-group \
+    hol_session_name=$workshop_name-aw-cdp-user-group \
     number_user_to_create=$number_of_workshop_users \
     username_prefix=$workshop_user_prefix \
     default_user_password=$workshop_user_default_password \
@@ -399,7 +399,7 @@ cdp iam create-user \
 --identity-provider-user-id $workshop_user_prefix$i \
 --email $workshop_user_prefix$i@clouderaexample.com \
 --saml-provider-name $workshop_name \
---groups "$workshop_name-cdp-user-group" \
+--groups "$workshop_name-aw-cdp-user-group" \
 --first-name User-$workshop_user_prefix$i \
 --last-name $workshop_user_prefix$i;
 done
@@ -412,11 +412,11 @@ ansible-playbook keycloak_hol_user_fetch.yml --extra-vars \
     keycloak__admin_password=$keycloak__admin_password \
     keycloak__domain=http://$KEYCLOAK_SERVER_IP \
     hol_keycloak_realm=master \
-    hol_session_name=$workshop_name-cdp-user-group"
+    hol_session_name=$workshop_name-aw-cdp-user-group"
 sleep 5
 echo "=============================Fetching Details: Please Wait=========================="
-sample_keycloak_user1=$(cat /tmp/$workshop_name-cdp-user-group.json | jq -r '.[0].username')
-sample_keycloak_user2=$(cat /tmp/$workshop_name-cdp-user-group.json | jq -r '.[1].username')
+sample_keycloak_user1=$(cat /tmp/$workshop_name-aw-cdp-user-group.json | jq -r '.[0].username')
+sample_keycloak_user2=$(cat /tmp/$workshop_name-aw-cdp-user-group.json | jq -r '.[1].username')
 sleep 5
 echo "===============================================================" >> "/userconfig/$workshop_name.txt"
 echo "            Keycloak Details For $workshop_name HOL:           " >> "/userconfig/$workshop_name.txt"
@@ -443,7 +443,7 @@ ansible-playbook keycloak_hol_user_teardown.yml --extra-vars \
     keycloak__admin_password=$keycloak__admin_password \
     keycloak__domain=http://$KEYCLOAK_SERVER_IP \
     hol_keycloak_realm=master \
-    hol_session_name=$workshop_name-cdp-user-group"
+    hol_session_name=$workshop_name-aw-cdp-user-group"
 sleep 10
 echo "====================Removing IDP From CDP Tenant============================================="
 cdp iam delete-saml-provider --saml-provider-name $workshop_name
